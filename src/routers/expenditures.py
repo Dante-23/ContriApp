@@ -1,9 +1,9 @@
-from fastapi import Response, status, Depends, APIRouter, HTTPException
+from fastapi import status, Depends, APIRouter, HTTPException
 from ..models import User, Expenditure, AddExpenditureDTO, UpdateExpenditureDTO
 from ..utils import generate_uuid_string
 from ..database import get_db
 from sqlalchemy.orm import Session
-from ..oauth2 import create_jwt_token, get_current_user
+from ..oauth2 import get_current_user
 
 router = APIRouter(
     prefix='/expenditures',

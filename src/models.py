@@ -1,5 +1,5 @@
 from .database import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from pydantic import BaseModel, field_validator, root_validator
@@ -18,7 +18,7 @@ class User(Base):
     role = Column(String, default="user")
 
 class Expenditure(Base):
-    __tablename__ = 'expendutures'
+    __tablename__ = 'expenditures'
     id = id = Column(String, primary_key=True)
     userid = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
@@ -27,9 +27,12 @@ class Expenditure(Base):
                         nullable=False, server_default=text('now()'))
     
 class ExpenditureContributor(Base):
-    __tablename__ = 'expenduture_contributors'
+    __tablename__ = 'expenditure_contributors'
     userid = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, primary_key=True)
-    expenditureid = Column(String, ForeignKey("expendutures.id", ondelete="CASCADE"), nullable=False, primary_key=True)
+    expenditureid = Column(String, ForeignKey("expenditures.id", ondelete="CASCADE"), nullable=False, primary_key=True)
+    amount = Column(Integer, nullable=False)
+    isAccepted = Column(Boolean, default=False, nullable=False)
+    isPaid = Column(Boolean, default=False, nullable=False)
 
 
 class Gender(str, Enum):
@@ -112,7 +115,7 @@ class AddExpenditureDTO(BaseModel):
         elif any(char.isdigit() for char in v):
             raise ValueError('Name must contain only alphabets')
         else:
-            return v.title()
+            return v
         
     @field_validator('amount')
     @classmethod
@@ -134,8 +137,20 @@ class UpdateExpenditureDTO(BaseModel):
         elif any(char.isdigit() for char in v):
             raise ValueError('Name must contain only alphabets')
         else:
-            return v.title()
+            return v
         
+    @field_validator('amount')
+    @classmethod
+    def validate_amount(cls, v: int) -> int:
+        if v < 0 or v > 8000000:
+            raise ValueError('0 <= amount <= 8000000')
+        else:
+            return v
+
+class AddExpenditureContributor(BaseModel):
+    userid: str
+    expenditureid: str
+    amount: int
     @field_validator('amount')
     @classmethod
     def validate_amount(cls, v: int) -> int:

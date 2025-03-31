@@ -49,7 +49,7 @@ def authenticate_user(user: UserAuthDTO, response: Response, db: Session = Depen
                 "role": userRole
             }
             access_token = create_jwt_token(data=tokenData)
-            return {"Status": "Authentication successfull", "Token": access_token}
+            return {"Status": "Authentication successfull", "Token": access_token, "Id": getattr(db_user, 'id'), "Role": userRole}
         else:
             response.status_code = status.HTTP_401_UNAUTHORIZED
             return {"Status": "Authentication failed"}
